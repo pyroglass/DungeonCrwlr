@@ -1,0 +1,192 @@
+﻿
+@{
+    ViewBag.Title = "Dungeon Crwlr";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@model string
+
+<h2>Dungeon Crwlr</h2>
+<style>
+    div {
+        text-align: center;
+        vertical-align: middle;
+        font-size: 22px;
+        font-weight: bold;
+    }
+
+    #cat {
+        position: absolute;
+        width: 50px;
+        height: 50px;
+        background-color: pink;
+        background-image: url('Images/pink.png');
+    }
+</style>
+<div id="page">
+    @Html.Hidden("SessionId", Model, new { id = "SessionId" })
+
+    <div id="map"></div>
+
+    <!--
+
+    <div id="cat"></div>
+    <div id="bird"></div>
+    <div id="turtle"></div>
+    <div id="goblin"></div>
+    <div id="elf"></div>
+
+    <div id="bad1">1</div>
+    <div id="bad2">2</div>
+    <div id="bad3">3</div>
+    <div id="bad4">4</div>
+    <div id="bad5">5</div>
+    <div id="bad6">6</div>
+    <div id="bad7">7</div>
+    <div id="bad8">8</div>
+    <div id="bad9">9</div>
+    <div id="bad10">10</div>
+
+    -->
+
+    <img id="backgroundImage" />
+    <input type="button" value="Save" id="btnSave" />
+    <input type="button" value="Load" id="btnLoad" />
+
+</div>
+
+@section scripts{
+
+
+    <script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+    <script src="~/Scripts/jquery.signalR-2.2.2.js"></script>
+    <script src="~/Scripts/monky-ui.js"></script>
+    <script src="/signalr/hubs"></script>
+
+    <script type="text/javascript">
+
+        $(function () {
+            LoadLastMap();
+            var _dungeonHub = $.connection.dungeonHub,
+                _messageFrequency = 10,
+                _updateRate = 1000 / _messageFrequency,
+                _moved = false;
+
+            var _model = {};
+            _model.Locations = [];
+
+            LoadInitMap();
+
+
+            function LoadInitMap() {
+                var _sessionId = $("#SessionId").val();
+                $.ajax({
+                    type: "GET",
+                    url: "GetLayout",
+                    contentType: "application/json; charset=utf-8",
+                    data: { sessionId: _sessionId },
+                    dataType: "json",
+                    success: function (_json) {
+                        console.log(_json);
+                        _model = $.parseJSON(_json);
+                        _model.Locations.forEach(function (obj, index) {
+                            var _div = "<div class='movableObject' id='" + obj.id + "' style='background-color:" + obj.bgcolor + "; background-image:url('Images/" + _sessionId + "/" + obj.bgImage + ";' ></div>";
+                            $("#page").append(_div);
+                        });
+                    },
+                    error: function () {
+                        alert("Failed to load init map");
+                    }
+                });
+            }
+
+
+
+
+            $.connection.hub.start().done(function () {
+                $(".movableObject").each(function () {
+                    $(this).draggable({
+                        drag: updateLocations
+                    });
+                })
+
+            });
+
+
+            function updateLocations() {
+
+                var _newModel = {};
+                var _newLocations = [];
+
+                _model.Locations.forEach(function (obj, index) {
+                    var _location = obj;
+                    _location.left = $("#" + obj.id).offset.left;
+                    _location.top = $("#" + obj.id).offset.top;
+                    _newLocations.push(_location);
+                });
+
+                _newModel.Locations = _newLocations;
+                _model = _newModel;
+
+                _moved = true;
+                setInterval(updateModel, _updateRate);
+            }
+
+            function updateModel() {
+                if (_moved) {
+                    _dungeonHub.server.updateScreens(_model);
+                    SaveMap();
+                    _moved = false;
+                }
+            }
+
+
+            $("#btnSave").click(function () {
+                SaveMap();
+            });
+
+            function SaveMap() {
+                updateLocations();
+                $.ajax({
+                    type: "POST",
+                    url: "SaveLocations?_p_Json=" + JSON.stringify(_model),
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    success: function (_msg) {
+                        //alert(_msg);
+                    },
+                    error: function () {
+                        // alert("Failed to save map");
+                    }
+                });
+
+            }
+
+            $("#btnLoad").click(function () {
+                LoadLastMap();
+            });
+
+
+            function LoadLastMap() {
+                var _sessionId = $("#SessionId").val();
+                $.ajax({
+                    type: "GET",
+                    url: "GetLayout",
+                    contentType: "application/json; charset=utf-8",
+                    data: { sessionId: _sessionId },
+                    dataType: "json",
+                    success: function (_json) {
+                        _model = $.parseJSON(_json);
+                        $.each(_model.Locations, function () {
+                            $("#" + this.id).css({ left: this.left, top: this.top });
+                        });
+                    },
+                    error: function () {
+                        alert("Failed to load last map");
+                    }
+                });
+            }
+
+        });
+    </script>
+
+}

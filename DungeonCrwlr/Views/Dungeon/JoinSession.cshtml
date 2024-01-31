@@ -1,0 +1,22 @@
+﻿
+@{
+    ViewBag.Title = "JoinSession";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Join Session</h2>
+
+
+@using(@Html.BeginForm("RunSession", "Dungeon", FormMethod.Post)){ 
+
+<span>Enter Session Id:</span> @Html.TextBox("SessionId",string.Empty, new { id="SessionId"})
+<br /><br />
+
+<button type="submit">Enter Game</button>
+
+}
+
+
+
+
+

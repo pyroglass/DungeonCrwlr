@@ -1,0 +1,353 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Dungeon Crwlr</title>
+    <style>
+        div{ text-align: center; vertical-align: middle; font-size: 22px;font-weight: bold;}
+        #cat {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background-color: pink;
+            background-image: url('Images/pink.png');
+        }
+        #bird {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            top: 50px;
+            background-color: blue;
+            background-image: url('Images/shuck.png');
+        }
+
+        #turtle {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            top: 100px;
+            background-color: green;
+            background-image: url('Images/shell.png');
+        }
+
+        #goblin {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            top: 150px;
+            background-color: brown;
+            background-image: url('Images/grix.png');
+        }
+
+        #elf {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            top: 200px;
+            background-color: red;
+            background-image: url('Images/Dae.png');
+        }
+
+        #bad1 {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            left: 900px;
+            background-color: black;
+            color: white;
+        }
+        #bad2 {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            top: 50px;
+            left: 900px;
+            background-color: black;
+            color: white;
+        }
+        #bad3 {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            top: 100px;
+            left: 900px;
+            background-color: black;
+            color: white;
+        }
+        #bad4 {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            top: 150px;
+            left: 900px;
+            background-color: black;
+            color: white;
+        }
+        #bad5 {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            top: 200px;
+            left: 900px;
+            background-color: black;
+            color: white;
+        }
+        #bad6 {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            top: 250px;
+            left: 900px;
+            background-color: black;
+            color: white;
+        }
+        #bad7 {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            top: 300px;
+            left: 900px;
+            background-color: black;
+            color: white;
+        }
+        #bad8 {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            top: 350px;
+            left: 900px;
+            background-color: black;
+            color: white;
+        }
+        #bad9 {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            top: 400px;
+            left: 900px;
+            background-color: black;
+            color: white;
+        }
+        #bad10 {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            top: 450px;
+            left: 900px;
+            background-color: black;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <script src="Scripts/jquery-3.4.1.min.js"></script>
+    <script src="Scripts/jquery-ui-1.12.1.min.js"></script>
+    <script src="Scripts/jquery.signalR-2.2.2.js"></script>
+<script src="Scripts/monky-ui.js"></script>
+    <script src="/signalr/hubs"></script>
+    <script>
+        $(function () {
+            LoadLastMap();
+
+            var _dungeonHub = $.connection.dungeonHub,
+                $cat = $("#cat"),
+                $bird = $("#bird"),
+                $turtle = $("#turtle"),
+                $goblin = $("#goblin"),
+                $elf = $("#elf"),
+                $bad1 = $("#bad1"),
+                $bad2 = $("#bad2"),
+                $bad3 = $("#bad3"),
+                $bad4 = $("#bad4"),
+                $bad5 = $("#bad5"),
+                $bad6 = $("#bad6"),
+                $bad7 = $("#bad7"),
+                $bad8 = $("#bad8"),
+                $bad9 = $("#bad9"),
+                $bad10 = $("#bad10"),
+                _messageFrequency = 10,
+                _updateRate = 1000 / _messageFrequency,
+                _model = {
+                    Locations: [
+                        { id: "cat", left: $("#cat").offset().left, top: $("#cat").offset().top },
+                        { id: "bird", left: $("#bird").offset().left, top: $("#bird").offset().top },
+                        { id: "turtle", left: $("#turtle").offset().left, top: $("#turtle").offset().top },
+                        { id: "goblin", left: $("#goblin").offset().left, top: $("#goblin").offset().top },
+                        { id: "elf", left: $("#elf").offset().left, top: $("#elf").offset().top },
+                        { id: "bad1", left: $("#bad1").offset().left, top: $("#bad1").offset().top },
+                        { id: "bad2", left: $("#bad2").offset().left, top: $("#bad2").offset().top },
+                        { id: "bad3", left: $("#bad3").offset().left, top: $("#bad3").offset().top },
+                        { id: "bad4", left: $("#bad4").offset().left, top: $("#bad4").offset().top },
+                        { id: "bad5", left: $("#bad5").offset().left, top: $("#bad5").offset().top },
+                        { id: "bad6", left: $("#bad6").offset().left, top: $("#bad6").offset().top },
+                        { id: "bad7", left: $("#bad7").offset().left, top: $("#bad7").offset().top },
+                        { id: "bad8", left: $("#bad8").offset().left, top: $("#bad8").offset().top },
+                        { id: "bad9", left: $("#bad9").offset().left, top: $("#bad9").offset().top },
+                        { id: "bad10", left: $("#bad10").offset().left, top: $("#bad10").offset().top }
+                    ]
+                },
+                _moved = false;
+
+
+
+            _dungeonHub.client.updateScreen = function (_p_Model) {
+                _model = _p_Model;
+                $.each(_p_Model.Locations, function () {
+                    $("#" + this.id).css({ left: this.left, top: this.top });
+                });
+
+            };
+
+            $.connection.hub.start().done(function () {
+                $cat.draggable({
+                    drag: updateLocations
+                });
+                $bird.draggable({
+                    drag: updateLocations
+                });
+                $turtle.draggable({
+                    drag: updateLocations
+                });
+                $goblin.draggable({
+                    drag: updateLocations
+                });
+                $elf.draggable({
+                    drag: updateLocations
+                });
+                $bad1.draggable({
+                    drag: updateLocations
+                });
+                $bad2.draggable({
+                    drag: updateLocations
+                });
+                $bad3.draggable({
+                    drag: updateLocations
+                });
+                $bad4.draggable({
+                    drag: updateLocations
+                });
+                $bad5.draggable({
+                    drag: updateLocations
+                });
+                $bad6.draggable({
+                    drag: updateLocations
+                });
+                $bad7.draggable({
+                    drag: updateLocations
+                });
+                $bad8.draggable({
+                    drag: updateLocations
+                });
+                $bad9.draggable({
+                    drag: updateLocations
+                });
+                $bad10.draggable({
+                    drag: updateLocations
+                });
+            });
+
+            function updateLocations() {
+
+                _model = {
+                    Locations: [
+                        { id: "cat", left: $("#cat").offset().left, top: $("#cat").offset().top },
+                        { id: "bird", left: $("#bird").offset().left, top: $("#bird").offset().top },
+                        { id: "turtle", left: $("#turtle").offset().left, top: $("#turtle").offset().top },
+                        { id: "goblin", left: $("#goblin").offset().left, top: $("#goblin").offset().top },
+                        { id: "elf", left: $("#elf").offset().left, top: $("#elf").offset().top },
+                        { id: "bad1", left: $("#bad1").offset().left, top: $("#bad1").offset().top },
+                        { id: "bad2", left: $("#bad2").offset().left, top: $("#bad2").offset().top },
+                        { id: "bad3", left: $("#bad3").offset().left, top: $("#bad3").offset().top },
+                        { id: "bad4", left: $("#bad4").offset().left, top: $("#bad4").offset().top },
+                        { id: "bad5", left: $("#bad5").offset().left, top: $("#bad5").offset().top },
+                        { id: "bad6", left: $("#bad6").offset().left, top: $("#bad6").offset().top },
+                        { id: "bad7", left: $("#bad7").offset().left, top: $("#bad7").offset().top },
+                        { id: "bad8", left: $("#bad8").offset().left, top: $("#bad8").offset().top },
+                        { id: "bad9", left: $("#bad9").offset().left, top: $("#bad9").offset().top },
+                        { id: "bad10", left: $("#bad10").offset().left, top: $("#bad10").offset().top }
+                    ]
+                }
+                _moved = true;
+                setInterval(updateModel, _updateRate);
+            }
+
+            function updateModel() {
+                if (_moved) {
+                    _dungeonHub.server.updateScreens(_model);
+                    SaveMap();
+                    _moved = false;
+                }
+            }
+
+            
+            $("#btnSave").click(function () {
+                SaveMap();
+            });
+
+            function SaveMap() {
+                updateLocations();
+                $.ajax({
+                    type: "POST",
+                    url: "Home/SaveLocations?_p_Json="+JSON.stringify(_model),
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    success: function (_msg) {
+                        //alert(_msg);
+                    },
+                    error: function() {
+                       // alert("Failed to save map");
+                    }
+                });
+
+            }
+
+            $("#btnLoad").click(function () {
+                LoadLastMap();
+            });
+
+            function LoadLastMap() {
+                $.ajax({
+                    type: "GET",
+                    url: "Home/GetLocations",
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    success: function (_json) {
+                        _model = $.parseJSON(_json);
+                        $.each(_model.Locations, function () {
+                            $("#" + this.id).css({ left: this.left, top: this.top });
+                        });
+                    },
+                    error: function() {
+                        alert("Failed to load map");
+                    }
+                });
+            }
+        });
+    </script>
+    <div id="map"></div>
+
+    <div id="cat"></div>
+    <div id="bird"></div>
+    <div id="turtle"></div>
+    <div id="goblin"></div>
+    <div id="elf"></div>
+
+    <div id="bad1">1</div>
+    <div id="bad2">2</div>
+    <div id="bad3">3</div>
+    <div id="bad4">4</div>
+    <div id="bad5">5</div>
+    <div id="bad6">6</div>
+    <div id="bad7">7</div>
+    <div id="bad8">8</div>
+    <div id="bad9">9</div>
+    <div id="bad10">10</div>
+
+<img src="Images/000_Mines_03.png" style="height: 738px; width: 822px;" />
+<input type="button" value="Save" id="btnSave" />
+<input type="button" value="Load" id="btnLoad"/>
+
+<script type="text/javascript">
+</script>
+</body>
+</html>

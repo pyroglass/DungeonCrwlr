@@ -1,0 +1,15 @@
+﻿
+@{
+    ViewBag.Title = "New Session";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@model string
+
+<h2>New Session</h2>
+
+Your session ID is : @Model  
+<br /><br /><br />
+
+You can share the ID or this @Html.ActionLink("link", "JoinSessionWithId", "Dungeon", new { sessionid = Model }, new { sessionid = Model })
+
